@@ -57,7 +57,7 @@ def similarMovies(movieSet, similarSet):
 							tempTuple = (currSimilarID, id)
 						elif id < currSimilarID:
 							tempTuple = (id, currSimilarID)
-						if tempTuple is not None:
+						if tempTuple:
 							if currSimilar < 5:
 								currSimilar += 1
 								if tempTuple not in similarSet:
