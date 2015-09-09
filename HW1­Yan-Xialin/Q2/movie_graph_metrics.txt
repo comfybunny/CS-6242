@@ -1,0 +1,11 @@
+Average node degree for this graph is 2.386. This means that on average, each movie has roughly 2 similar titles. This average is not very meaningful because when the degree distribution is viewed, the node degree ranges from 0 to 16 with a degree of 1 accounting for more than 300 while there are less than 50 with a degree of 2.
+
+This graph has a network diameter of 26. Intuitively, this means that the longest shortest path between any two nodes is 26. A node that is connected to another node with one edge in between has a distance of 1. For every node, the maximum distance to another node via the shortest path is 26.
+
+Average path length is the average distance between two nodes for all nodes in the graph. This means that on average, there are 8.697 edges connecting two nodes.
+
+Mad Max: Fury Road			PageRank: 0.007
+The Wolf of Wall Street		PageRank: 0.007
+A Beautiful Mind			PageRank: 0.006
+Song of the Sea				PageRank: 0.005
+The Optimists				PageRank: 0.005

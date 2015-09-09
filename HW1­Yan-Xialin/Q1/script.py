@@ -9,7 +9,7 @@ reload(sys)
 sys.setdefaultencoding( "utf-8" )
 
 
-API_KEY = ''
+API_KEY = '884904c1c9ca63dcd4c07ef1836e6806'
 #QUESTION : should I be returning the dupSet instead of passing it in and out?
 #QUESTION : there is a 	total_pages attribute, is that worth checking?
 def findKeywordinTitle(querySearch, dupSet):
