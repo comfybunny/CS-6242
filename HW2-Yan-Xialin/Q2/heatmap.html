@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>HeatMap</title>
+    <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        var dataset;
+
+        var margin = {
+                top: 30,
+                right: 20,
+                bottom: 40,
+                left: 60
+            },
+
+        width = 1000 - margin.left - margin.right,
+        height = 700 - margin.top - margin.bottom;
+
+        var x = d3.scale.linear()
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var z = d3.scale.linear().range(["white", "steelblue"]);
+
+        var xStep = 10;
+        var yStep = 1;
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        d3.tsv("hourly_heatmap.json", function(error, json) {
+            if (error) return console.warn(error);
+            dataset = json;
+
+            
+
+            svg.selectAll(".point")
+                .data(dataset)
+                .enter()
+                .append("path")
+                .attr("d", d3.svg.symbol().type(function(d) {
+                    return speciesShape[d.species];
+                }))
+                .attr("transform", function(d) {
+                    return "translate(" + x(d.sepalWidth) + "," + y(d.sepalLength) + ") scale(" +Math.sqrt(y(d.sepalLength))*.1+ ")";
+                })
+
+
+        });
+    </script>
+</body>
+
+</html>

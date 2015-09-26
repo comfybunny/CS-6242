@@ -1,0 +1,1 @@
+This puts the CSV file into memory to sort and find the top 50 nodes. To create the links, I ran a double for loop through all the nodes with the second starting from the next node to the end.

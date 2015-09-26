@@ -1,0 +1,85 @@
+Assignment 1 Rubric (Spring 2015)
+====================
+
+Implementation (10)
+Student gets points for using Weka or any other software
+
+-------------------------------------------
+Dataset 1 and 2  (6 points)
+Why is the dataset interesting?
+- Should describe something about how it relates to Machine Learning
+(For example, datasets are interesting when they have different sample size, different feature lengths and so on. More significantly when you run these datasets on the same algorithms they give different results. This gives us a basis to analyze, so these datasets are interesting.
+
+We will also allow students to use two datasets having different kinds of outputs, continuous and categorial values. This corresponds to a regression and a classification problem) 
+—————————
+
+Properties of Algorithms:
+Algorithms are compared in their time and space complexities. This is called asymptotic analysis. If students mention it or compare any ML algorithms for time and space, praise them.
+
+For ML problems, they should have also used the correct error metric for their Model Complexity curves (MC) and Learning curves (LC).
+- Regression Problems use Least square error.
+- Classification Problems use Type I and II errors. Students have to plot ROC curves to compare graphs here.
+
+-------------------------------------------
+Analysis on Dataset (40 points for each dataset, 8 points for each representation)
+
+For each of the representations - 
+MC curve
+LC curves
+
+Students have to plot these + Analyze them
+
+(4 points)
+After that they should talk about bias/variance in each of the representations. What parameters of their model affected the bias/variance? Did they try to do something to reduce this effect? (Usually you will want to do cross-validation to reduce the effect)
+
+2 points explain method (dt, etc)
+
+Some Notes:
+1. Decision Trees
+- DTs can be learnt with the ID3 algorithm. You can use GINI Index or any other Information Theoretic index to find splits.
+- Model Complexity can be changed for DTs by changing depth of the DT
+- Model Complexity can be changed by changing confidence value. This value is a parameter of the pruning algorithm used in ID3. 
+
+2. Neural Networks
+- Backdrop is used to learn NN’s
+- Another important attribute of NN is the thresholding function. Usually a sigmoid function is used
+- Model Complexity can be changed by making a bigger/deeper network
+- Learning rate and momentum can be changed to make learning go faster. There is a downside to this!
+
+
+3. Boosting
+- Adaboost is the most popular algorithm to perform boosting
+- The most popular based learner is a Decision Stump, a weak learner
+- Model Complexity can be changed by changing the number of base learners
+- Usually the learner with the least effect of bias/variance
+
+4. SVM 
+- Learnt by finding the soft margin
+- Complexity changed by using different kernels
+- Choice of kernel tells us how the data is distributed. Good domain knowledge helps.
+
+5. kNN
+- Learnt by using LWR or something similar
+- Complexity changed by using a different k
+
+
+-------------------------------------------
+Conclusion (4-6 points)
+- Something interesting about the dataset based on observations
+- Something interesting on the algorithms used
+The student should have demonstrated an understanding of:
+Occam's Razor or Generalization 
+Cross Validation and MAE/MSE 
+Overfitting 
+
+6 interesting
+4 bias variance
+10 conclusion/learn
+
+per dataset
+	4 method
+	7 MC (2 points for graphs (1 for each dataset))
+	5 LC (2 points for graphs)
+
+half credit for 1 dataset
+deduct 2 points overall if table

@@ -1,0 +1,3 @@
+Iris-Setosa seems to have a large sepal width but small sepal length and a small petal width and length. Iris-Versicolor is more similar to Iris-Virginica, but Iris-Versicolor has the largest sepal length resulting in a larger petal width and length.
+
+I used the power scale with an exponent of 2. For the petal dimensions, this separates the data very well especially between the Iris-Versicolor and Iris-Virginca overlap. Log scales looks really awful and clumps the data.

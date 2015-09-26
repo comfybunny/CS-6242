@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Scatterplot</title>
+    <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        var dataset;
+
+        var margin = {
+                top: 30,
+                right: 20,
+                bottom: 40,
+                left: 60
+            },
+
+        width = 1000 - margin.left - margin.right,
+        height = 700 - margin.top - margin.bottom;
+
+        var speciesShape = {
+            setosa: "circle",
+            versicolor: "square",
+            virginica: "triangle-up"
+        };
+
+        var x = d3.scale.pow().exponent(2)
+            .range([0, width]);
+
+        var y = d3.scale.pow().exponent(2)
+            .range([height, 0]);
+
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+
+
+        d3.tsv("iris.tsv", function(error, tsv) {
+            if (error) return console.warn(error);
+            dataset = tsv;
+
+
+            x.domain(d3.extent(dataset, function(d) {
+                return d.sepalWidth;
+            }));
+
+            y.domain(d3.extent(dataset, function(d) {
+                return d.sepalLength;
+            }));
+
+            var svg = d3.select("body")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            svg.selectAll(".point")
+                .data(dataset)
+                .enter()
+                .append("path")
+                .attr("d", d3.svg.symbol().type(function(d) {
+                    return speciesShape[d.species];
+                }))
+                .attr("transform", function(d) {
+                    return "translate(" + x(d.sepalWidth) + "," + y(d.sepalLength) + ") scale(" +Math.sqrt(y(d.sepalLength))*.1+ ")";
+                })
+
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width)
+                .attr("y", -6)
+                .style("text-anchor", "end")
+                .text("Sepal Width (cm)");
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(0,0)")
+                .call(yAxis)
+                .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", -40)
+                .style("text-anchor", "end")
+                .text("Sepal Length (cm)")
+
+            svg.append("g").append("rect")
+                .attr("x", 10)
+                .attr("y", 50)
+                .attr("width", 200)
+                .attr("height", 100)
+                .attr("style", "outline: thin solid black;")
+                .style("fill", "none")
+                .attr("transform", "translate(700,400)");
+
+            svg.append("g")
+                .append("circle")
+                .attr("cx", 0)
+                .attr("cy", 0)
+                .attr("r", 5)
+                .attr("transform", "translate(750,475)")
+
+            svg.append("g")
+                .append("text")
+                .text("Setosa")
+                .attr("transform", "translate(770,480)")
+
+            svg.append("g")
+                .append("rect")
+                .attr("x", 745)
+                .attr("y", 495)
+                .attr("width", 10)
+                .attr("height", 10);
+
+            svg.append("g")
+                .append("text")
+                .text("Versicolor")
+                .attr("transform", "translate(770,505)")
+
+            svg.append("g")
+                .append("svg:path")
+                .attr("d", d3.svg.symbol().type("triangle-up"))
+                .style("fill", "black")
+                .attr("transform", "translate(750,525)");
+
+            svg.append("g")
+                .append("text")
+                .text("Virginica")
+                .attr("transform", "translate(770,530)")
+
+            svg.append("g")
+                .append("text")
+                .text("IRIS Sepal Width vs Sepal Length")
+                .attr("transform", "translate(250,0) scale(2)")
+   
+
+
+
+
+        });
+    </script>
+</body>
+
+</html>
