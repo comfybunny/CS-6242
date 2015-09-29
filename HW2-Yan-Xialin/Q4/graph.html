@@ -1,80 +1,157 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-.node {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
-
-.link {
-  stroke: #999;
-  stroke-opacity: .6;
-}
-
+    .node {
+        stroke: #fff;
+        stroke-width: 1.5px;
+    }
+    
+    .link {
+        stroke: #999;
+        stroke-opacity: .6;
+    }
+    
+    .d3-tip {
+        line-height: 1;
+        font-weight: bold;
+        font-size: 30px;
+        padding: 12px;
+    }
 </style>
 
 <head>
-<title>Who Played With Whom</title>
+    <title>Who Played With Whom</title>
 </head>
 
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script>
+    <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
+    <script type="text/javascript" src="../lib/d3/d3-tip.js"></script>
+    <script>
+        //Size of region to render on
+        var width = 1000,
+            height = 1000;
 
-//Size of region to render on
-var width = 960,
-    height = 500;
+        var PositionColors = {
+            CD: '#2F4F4F',
+            W: '#696969',
+            FB: '#808080',
+            F: '#708090',
+            M: '#C0C0C0',
+            CH: '#0000FF',
+            WH: '#F5F5F5',
+            IF: '#B22222',
+            G: '#FFFF00',
+            D: '#000066',
+        };
 
-//D3 force directed layout
-//Try playing with the charge and link distance
-var force = d3.layout.force()
-    .charge(-100)
-    .linkDistance(40)
-    .size([width, height]);
+        //D3 force directed layout
+        //Try playing with the charge and link distance
+        var force = d3.layout.force()
+            .charge(-300)
+            .linkDistance(50)
+            .gravity(.05)
+            .distance(200)
+            .size([width, height]);
 
-//Add our canvas
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+        //Add our canvas
+        var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
 
-//Select the data ;)
-d3.json("afc.json", function(error, graph) {
-  force
-      .nodes(graph.nodes)
-      .links(graph.links)
-      .start();
+        /* Initialize tooltip */
+        var tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
+            return "Name: " + d.NAME + ",   Positions: " + d.POSITION + ",   Appearances: " + d.APPEARANCES;
+        })
 
-//Add the links
-  var link = svg.selectAll(".link")
-      .data(graph.links)
-      .enter().append("line")
-      .attr("class", "link")
-      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+        /* Invoke the tip in the context of your visualization */
+        svg.call(tip)
 
-//Add the nodes
-  var node = svg.selectAll(".node")
-      .data(graph.nodes)
-      .enter().append("circle")
-      .attr("class", "node")
-      .attr("r", 5)
-      .text(function(d){ return d.name;})
-      .call(force.drag);
-	  
-  node.append("title")
-      .text(function(d) { return d.name; });
 
-//Update stuff for animation:
-//   This takes the physics simulation for the force directed graph and
-//   sets the location of the nodes and edges to the new positions
-  force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        //Select the data ;)
+        d3.json("afc.json", function(error, graph) {
+            force
+                .nodes(graph.nodes)
+                .links(graph.links)
+                .start();
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-  });
-});
+            //Add the links
+            var link = svg.selectAll(".link")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-width", function(d) {
+                    return Math.sqrt(d.value);
+                });
 
-</script>
+            var gnodes = svg.selectAll('g.gnode')
+                .data(graph.nodes)
+                .enter()
+                .append('g')
+                .classed('gnode', true);
+
+            //Add the nodes
+            var node = gnodes.append("circle")
+                .attr("class", "node")
+                .attr("r", 5)
+                .text(function(d) {
+                    return d.NAME;
+                })
+                .style("fill", function(d) {
+                    return PositionColors[d.POSITION];
+                })
+                .call(force.drag)
+                // .on("dblclick",function(d){console.log("TESTING")})
+                .each(function() {
+                    var sel = d3.select(this);
+                    var state = false;
+                    sel.on('dblclick', function(d) {
+                        d3.select(this).classed("fixed", d.fixed = !d.fixed);
+                        if (d.fixed) {
+                            sel.style('fill', 'black');
+                        } else {
+                            sel.style('fill', function(d) {
+                                return PositionColors[d.POSITION];
+                            });
+                            // force.resume();
+                        }
+                    });
+                })
+                .attr("transform", function(d) {
+                    return "scale(" + Math.sqrt(d.GOALS) * .5 + ")";
+                })
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide)
+
+            var labels = gnodes.append("text")
+                .attr("dx", 12)
+                .attr("dy", ".35em")
+                .text(function(d) {
+                    if (+(d.APPEARANCES) >= 250) {
+                        return d.NAME;
+                    } else {
+                        return "";
+                    }
+                });
+
+            //Update stuff for animation:
+            //   This takes the physics simulation for the force directed graph and
+            //   sets the location of the nodes and edges to the new positions
+            force.on("tick", function() {
+                link.attr("x1", function(d) {
+                        return d.source.x;
+                    })
+                    .attr("y1", function(d) {
+                        return d.source.y;
+                    })
+                    .attr("x2", function(d) {
+                        return d.target.x;
+                    })
+                    .attr("y2", function(d) {
+                        return d.target.y;
+                    });
+                gnodes.attr("transform", function(d) {
+                    return 'translate(' + [d.x, d.y] + ')';
+                });
+            });
+        });
+    </script>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Scatterplot</title>
+    <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        var dataset;
+        var data;
+        var margin = {
+                top: 30,
+                right: 20,
+                bottom: 40,
+                left: 60
+            },
+
+        width = 1000 - margin.left - margin.right,
+        height = 700 - margin.top - margin.bottom;
+
+
+        d3.json("poc.json", function(error, json) {
+            if (error) return console.warn(error);
+            dataset = json;
+            data = d3.nest()    
+                .key(function(d) { return d.Origin;})
+                .rollup(function(d) { 
+               return d3.sum(d, function(g) {return +(g.Refugees); });
+              }).entries(dataset);
+
+        });
+
+    </script>
+</body>
+
+</html>

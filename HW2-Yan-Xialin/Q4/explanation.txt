@@ -1,0 +1,3 @@
+c-iii. The radii scaled by the square root works much better because larger points will not grow linearly. The larger a point get, the larger the node will get but the factor of increase is smaller allowing for better visualization.
+
+g-ii. I edited parameters on the directed force layout such as the charge, linkDistance, gravity, and distance. I changed the ratio between the size of the graph verse my text. I enlarged the mouse over for easy reading.
