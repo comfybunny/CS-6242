@@ -7,9 +7,31 @@
     <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
 </head>
 
-<body>
-    <script type="text/javascript">
+<style>
+    body {
+        font: 10px sans-serif;
+    }
+    
+    .label {
+        font-weight: bold;
+    }
+    
+    .tile {
+        shape-rendering: crispEdges;
+    }
+    
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+</style>
 
+<body onload="loadMap()">
+    <div id="hourly"></div>
+    <div id="daily"></div>
+    <script type="text/javascript">
         var dataset;
 
         var margin = {
@@ -19,46 +41,282 @@
                 left: 60
             },
 
-        width = 1000 - margin.left - margin.right,
-        height = 700 - margin.top - margin.bottom;
+            width = 1000 - margin.left - margin.right,
+            height = 700 - margin.top - margin.bottom;
 
-        var x = d3.scale.linear()
-            .range([0, width]);
+        function loadMap() {
+            loadMapHourly();
+            loadMapDaily();
+        }
 
-        var y = d3.scale.linear()
-            .range([height, 0]);
+        function loadMapHourly() {
+            var formatTime = d3.time.format("%I %p"),
+                formatHour = function(d) {
+                    return formatTime(new Date(2015, 9, 28, d, 00));
+                };
 
-        var z = d3.scale.linear().range(["white", "steelblue"]);
+            var x = d3.scale.linear()
+                .range([0, width]);
 
-        var xStep = 10;
-        var yStep = 1;
+            var y = d3.scale.linear()
+                .range([height, 0]);
 
-        var svg = d3.select("body")
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            var z = d3.scale.linear().range(["white", "steelblue"]);
 
-        d3.tsv("hourly_heatmap.json", function(error, json) {
-            if (error) return console.warn(error);
-            dataset = json;
+            var xStep = 1;
+            var yStep = 20;
+            var svg = d3.select("#hourly")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            
+            d3.json("hourly_heatmap.json", function(error, json) {
+                if (error) return console.warn(error);
+                // dataset = json;
+                var buckets = [];
+                json.forEach(function(d) {
+                    d.values.forEach(function(v, i) {
+                        buckets.push({
+                            'date': i,
+                            'bucket': +d.key,
+                            'count': +v
+                        });
+                    })
+                });
+                // Compute the scale domains.
+                x.domain(d3.extent(buckets, function(d) {
+                    return d.date;
+                }));
+                y.domain(d3.extent(buckets, function(d) {
+                    return d.bucket;
+                }));
+                z.domain([0, d3.max(buckets, function(d) {
+                    return d.count;
+                })]);
+                // Extend the x- and y-domain to fit the last bucket.
+                // For example, the y-bucket 3200 corresponds to values [3200, 3300].
+                x.domain([x.domain()[0], +x.domain()[1] + xStep]);
+                y.domain([y.domain()[0], y.domain()[1] + yStep]);
 
-            svg.selectAll(".point")
-                .data(dataset)
-                .enter()
-                .append("path")
-                .attr("d", d3.svg.symbol().type(function(d) {
-                    return speciesShape[d.species];
-                }))
-                .attr("transform", function(d) {
-                    return "translate(" + x(d.sepalWidth) + "," + y(d.sepalLength) + ") scale(" +Math.sqrt(y(d.sepalLength))*.1+ ")";
-                })
+                svg.selectAll(".tile")
+                    .data(buckets)
+                    .enter().append("rect")
+                    .attr("class", "tile")
+                    .attr("x", function(d) {
+                        return x(d.date);
+                    })
+                    .attr("y", function(d) {
+                        return y(d.bucket + yStep);
+                    })
+                    .attr("width", x(xStep) - x(0))
+                    .attr("height", y(0) - y(yStep))
+                    .style("fill", function(d) {
+                        return z(d.count);
+                    });
+
+                // Add a legend for the color values.
+                var legend = svg.selectAll(".legend")
+                    .data(z.ticks(6).slice(1).reverse())
+                    .enter().append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) {
+                        return "translate(" + (width - 40) + "," + (20 + i * 20) + ")";
+                    });
 
 
-        });
+                legend.append("rect")
+                    .attr("width", 20)
+                    .attr("height", 20)
+                    .style("fill", z);
+
+                legend.append("text")
+                    .attr("x", 26)
+                    .attr("y", 10)
+                    .attr("dy", ".35em")
+                    .text(String);
+
+                svg.append("text")
+                    .attr("class", "label")
+                    .attr("x", width + 20)
+                    .attr("y", 10)
+                    .attr("dy", ".35em")
+                    .text("Count");
+
+                // Add an x-axis with label.
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.svg.axis()
+                        .scale(x)
+                        .ticks(d3.time.hourly)
+                        .tickFormat(formatHour)
+                        .orient("bottom"))
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("x", width)
+                    .attr("y", -6)
+                    .attr("text-anchor", "end")
+                    .text("Date");
+
+
+                // Add a y-axis with label.
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(d3.svg.axis().scale(y).orient("left"))
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .attr("text-anchor", "end")
+                    .attr("transform", "rotate(-90)")
+                    .text("Value");
+                svg.append("svg:text")
+                    .text("Hourly Glucose Readings")
+                    .attr("x", width - 650)
+                    .attr("y", 30)
+                    .style("font-size", "400%")
+                    .style("fill", "black");
+
+            });
+        }
+
+
+        function loadMapDaily() {
+            var formatTime = d3.time.format("%A"),
+                formatDay = function(d) {
+                    return formatTime(new Date(2015, 11, d));
+                };
+
+            var x = d3.scale.linear()
+                .range([0, width]);
+
+            var y = d3.scale.linear()
+                .range([height, 0]);
+
+            var z = d3.scale.linear().range(["white", "steelblue"]);
+
+            var xStep = 1;
+            var yStep = 20;
+            var svg = d3.select("#daily")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            d3.json("day_heatmap.json", function(error, json) {
+                if (error) return console.warn(error);
+                // dataset = json;
+                var buckets = [];
+                json.forEach(function(d) {
+                    d.values.forEach(function(v, i) {
+                        buckets.push({
+                            'date': i,
+                            'bucket': +d.key,
+                            'count': +v
+                        });
+                    })
+                });
+                // Compute the scale domains.
+                x.domain(d3.extent(buckets, function(d) {
+                    return d.date;
+                }));
+                y.domain(d3.extent(buckets, function(d) {
+                    return d.bucket;
+                }));
+                z.domain([0, d3.max(buckets, function(d) {
+                    return d.count;
+                })]);
+                // Extend the x- and y-domain to fit the last bucket.
+                // For example, the y-bucket 3200 corresponds to values [3200, 3300].
+                x.domain([x.domain()[0], +x.domain()[1] + xStep]);
+                y.domain([y.domain()[0], y.domain()[1] + yStep]);
+
+                svg.selectAll(".tile")
+                    .data(buckets)
+                    .enter().append("rect")
+                    .attr("class", "tile")
+                    .attr("x", function(d) {
+                        return x(d.date);
+                    })
+                    .attr("y", function(d) {
+                        return y(d.bucket + yStep);
+                    })
+                    .attr("width", x(xStep) - x(0))
+                    .attr("height", y(0) - y(yStep))
+                    .style("fill", function(d) {
+                        return z(d.count);
+                    });
+
+                // Add a legend for the color values.
+                var legend = svg.selectAll(".legend")
+                    .data(z.ticks(6).slice(1).reverse())
+                    .enter().append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) {
+                        return "translate(" + (width - 40) + "," + (20 + i * 20) + ")";
+                    });
+
+
+                legend.append("rect")
+                    .attr("width", 20)
+                    .attr("height", 20)
+                    .style("fill", z);
+
+                legend.append("text")
+                    .attr("x", 26)
+                    .attr("y", 10)
+                    .attr("dy", ".35em")
+                    .text(String);
+
+                svg.append("text")
+                    .attr("class", "label")
+                    .attr("x", width + 20)
+                    .attr("y", 10)
+                    .attr("dy", ".35em")
+                    .text("Count");
+
+                // Add an x-axis with label.
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.svg.axis()
+                        .scale(x)
+                        .ticks(d3.time.hourly)
+                        .tickFormat(function(d) {
+                            return formatTime(new Date(2015, 11, d))
+                        })
+                        .orient("bottom"))
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("x", width)
+                    .attr("y", -6)
+                    .attr("text-anchor", "end")
+                    .text("Date");
+
+
+                // Add a y-axis with label.
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(d3.svg.axis().scale(y).orient("left"))
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .attr("text-anchor", "end")
+                    .attr("transform", "rotate(-90)")
+                    .text("Value");
+
+                svg.append("svg:text")
+                    .text("Daily Glucose Readings")
+                    .attr("x", width - 650)
+                    .attr("y", 30)
+                    .style("font-size", "400%")
+                    .style("fill", "black");
+            });
+        }
     </script>
 </body>
 

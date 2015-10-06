@@ -1,0 +1,1 @@
+b. I created a table of origin and destination. I added the color gradient for number of refugees with red being the largest and green being the smallest. I added a grand total column.
