@@ -260,7 +260,7 @@
             var chart = d3.select("#chart2")
                 .append("svg")
                 .attr("width", spaceForLabels + chartWidth + spaceForLegend)
-                .attr("height", chartHeight+50);
+                .attr("height", chartHeight + 50);
 
             // Create bars
             var bar = chart.selectAll("g")
@@ -308,8 +308,7 @@
                         return listCountries[Math.floor(i / list5Countries.length)];
                     else
                         return ""
-                })
-                ;
+                });
 
 
 
@@ -348,26 +347,26 @@
                 });
 
 
-chart.append("svg:text")
+            chart.append("svg:text")
                 .text("refugee count per residence country")
                 .attr("x", 550)
                 .attr("y", 25)
                 .style("font-size", "200%")
 
-    var x = d3.scale.linear()
-        .domain([0, d3.max(zippedData)+10000])
-        .range([0, 900]);
+            var x = d3.scale.linear()
+                .domain([0, d3.max(zippedData) + 10000])
+                .range([0, 900]);
 
 
-    var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
+            var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
 
-                chart.append("g")
-        .attr("class", "xaxis")
-        .attr('id','xaxis')
-        .attr("transform", "translate(" + 150 + ", " + 1100+ ")")
-        .call(xAxis);
+            chart.append("g")
+                .attr("class", "xaxis")
+                .attr('id', 'xaxis')
+                .attr("transform", "translate(" + 150 + ", " + 1100 + ")")
+                .call(xAxis);
 
         };
     </script>

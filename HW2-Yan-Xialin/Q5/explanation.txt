@@ -1,1 +1,3 @@
 b. I created a table of origin and destination. I added the color gradient for number of refugees with red being the largest and green being the smallest. I added a grand total column.
+
+c. I created a table in tableau with the age/sex as the x and a logarithmic y since the range of data was so large. Then I made male blue gradient and female red gradient. I added a title and axis labels and legend.
