@@ -7,27 +7,37 @@
     <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
 </head>
 
-<body onload="loadMap()">
+<body>
+
+
+    <div id="dropDown">
+        <select id="year" onchange="yearchange()">
+            <option value="2005" selected>2005</option>
+            <option value="2006">2006</option>
+            <option value="2007">2007</option>
+            <option value="2008">2008</option>
+            <option value="2009">2009</option>
+            <option value="2010">2010</option>
+            <option value="2011">2011</option>
+            <option value="2012">2012</option>
+            <option value="2013">2013</option>
+            <option value="2014">2014</option>
+        </select>
+    </div>
+
     <div id="chart1"></div>
     <div id="chart2"></div>
-
-    <select id="year">
-        <option value="2005">2005</option>
-        <option value="2006">2006</option>
-        <option value="2007">2007</option>
-        <option value="2008">2008</option>
-        <option value="2009">2009</option>
-        <option value="2010">2010</option>
-        <option value="2011">2011</option>
-        <option value="2012">2012</option>
-        <option value="2013">2013</option>
-        <option value="2014">2014</option>
-    </select>
-
 
     <script type="text/javascript">
         var dataset;
         var data;
+        var chart1Data = {};
+        var chart2Data = {};
+        var listCountries;
+        var barGraphData = {};
+
+
+        var testing;
         var margin = {
                 top: 30,
                 right: 20,
@@ -40,12 +50,86 @@
 
         var dispatch = d3.dispatch("load", "statechange");
 
+        d3.json("poc.json", function(error, json) {
+            if (error) return console.warn(error);
+            dataset = json;
+
+
+            json.forEach(function(d) {
+                var tempValue = +(d['Refugees (incl. refugee-like situations)']);
+
+                if (typeof(tempValue) === 'number' && tempValue != "") {
+                    if (chart1Data[d['Origin']] == undefined) {
+                        var tempDict = {};
+                        tempDict[d['Year']] = tempValue;
+                        chart1Data[d['Origin']] = tempDict
+                    } else { // country is there now we need to check year
+                        if (chart1Data[d['Origin']][d['Year']] == undefined) {
+                            chart1Data[d['Origin']][d['Year']] = tempValue;
+                            // console.log(+(d['Refugees (incl. refugee-like situations)']));
+                        } else {
+                            chart1Data[d['Origin']][d['Year']] = chart1Data[d['Origin']][d['Year']] + tempValue;
+                        }
+                        // chart1Data[d['Origin']] = chart1Data[d['Origin']] + tempValue;
+                    }
+
+                }
+
+
+            });
+
+
+            listCountries = Object.keys(chart1Data);
+            loadMap();
+
+
+        });
+
         function loadMap() {
-            loadChart1();
-            // loadChart2();
+            loadChart1(+document.getElementById("year").value);
+            loadChart2(+document.getElementById("year").value);
         }
 
-        function loadChart1() {
+        function yearchange() {
+            d3.selectAll("svg").remove();
+            loadChart1(+document.getElementById("year").value);
+            // createMultiBarChart(document.getElementById("year").value);
+        }
+
+        function filterChart1(obj) {
+            // console.log(typeof(obj.id)==='number');
+            // testing = obj;
+            if ('Refugees (incl. refugee-like situations)' in obj && typeof(+(obj.id)) === 'number' && (obj.id) != "") {
+                return true;
+            }
+            return false;
+        }
+
+        function loadChart1(currYear) {
+            // console.log("TESTING");
+            var graphData = [];
+            var graphAxis = []
+            for (var tempKey in listCountries) {
+                barGraphData[listCountries[tempKey]] = chart1Data[listCountries[tempKey]][currYear];
+                graphData[tempKey] = chart1Data[listCountries[tempKey]][currYear];
+                graphAxis[tempKey] = listCountries[tempKey];
+            }
+            // console.log(graphData)
+
+            var max = d3.max(graphData, function(d) {
+                return d;
+            });
+
+            var xscale = d3.scale.linear()
+                .domain([0, max + 10000])
+                .range([0, width]);
+
+            var yscale = d3.scale.linear()
+                .domain([0, listCountries.length])
+                .range([1, height]);
+
+
+
             var svg = d3.select("#chart1")
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -53,22 +137,77 @@
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+            var bar = svg.selectAll("g")
+                .data(graphData)
+                .enter().append("g")
+                .attr("transform", function(d, i) {
+                    return "translate(0," + d * 20 + ")";
+                });
+            var tempHeight = height + 10;
+            var tempLeft = margin.left + 50;
+            var tempTop = margin.top + 10;
+            var chart = svg.append('g')
+                .attr("transform", "translate(" + tempLeft + "," + margin.top + ")")
+                .attr('id', 'bars')
+                .selectAll('rect')
+                .data(graphData)
+                .enter()
+                .append('rect')
+                .attr('height', height / listCountries.length * 2 / 3)
+                .attr({
+                    'x': 0,
+                    'y': function(d, i) {
+                        return yscale(+i);
+                    }
+                })
+                .attr('width', function(d) {
+                    return xscale(+d);
+                });
 
-            d3.json("poc.json", function(error, json) {
-                if (error) return console.warn(error);
-                dataset = json;
-                data = d3.nest()
-                    .key(function(d) {
-                        return d.Origin;
-                    })
-                    .rollup(function(d) {
-                        return d3.sum(d, function(g) {
-                            return +(g.Refugees);
-                        });
-                    }).entries(dataset);
 
-            });
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + tempLeft + "," + tempHeight + ")")
+                .call(d3.svg.axis()
+                    .scale(xscale)
+                    .orient("bottom"))
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width)
+                .attr("y", 1)
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.svg.axis().scale(yscale)
+                    .tickSize(1)
+                    .tickFormat(function(d, i) {
+
+                        if (listCountries[i] == "Serbia and Kosovo (S/RES/1244 (1999))") {
+                            return "Serbia & Kosovo";
+                        } else if (listCountries[i] == "Iran (Islamic Rep. of)") {
+                            return "Iran";
+                        } else
+                            return listCountries[i];
+                    }).orient("left"))
+                // .append("text")
+                // .attr("class", "label")
+                // .attr("y", 6)
+                // .attr("dy", ".71em")
+                // .attr("text-anchor", "end")
+                .attr("transform", "translate(" + tempLeft + "," + margin.top + ")")
+
+            svg.append("svg:text")
+                .text("origin country vs total number of refugees")
+                .attr("x", 300)
+                .attr("y", 0)
+                .style("font-size", "200%")
         }
+
+        function loadChart2(currYear){
+            dataset.forEach(function(d){
+                // console.log(d);
+            });
+        };
     </script>
 </body>
 
