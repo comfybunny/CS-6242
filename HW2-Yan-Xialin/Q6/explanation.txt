@@ -1,0 +1,1 @@
+I created one box for every year to see how it changed over time. The size is porportional to the log number of refugees. If you hover over the graph it tells you the actual number. I added a legend on the bottom but it is per country.

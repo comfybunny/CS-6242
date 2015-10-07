@@ -5,10 +5,11 @@
     <meta charset="utf-8">
     <title>ALL THE THINGS</title>
     <script type="text/javascript" src="../lib/d3/d3.v3.js"></script>
+    <script type="text/javascript" src="../lib/d3/d3-tip.js"></script>
 </head>
 
 <body>
-
+    <div id="chart2008"></div>
     <div id="chart2005"></div>
     <div id="chart2006"></div>
     <div id="chart2007"></div>
@@ -25,12 +26,15 @@
         var data;
         var chart1Data = {};
         var listCountries;
-        var ALLTHEDATA ={};
-        var years = [2005,2006,2007,2008,2009,2010,2011,2012,2013];
-        var strYears = ['2005','2006','2007','2008','2009','2010','2011','2012','2013'];
+        var ALLTHEDATA = {};
+        var years = [2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013];
+        var divNames = ['#chart2005', '#chart2005', '#chart2005', '#chart2006', '#chart2006', '#chart2006', '#chart2007', '#chart2007', '#chart2007'];
+        var strYears = ['2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013'];
+        var xPosition = [35, 105, 175, 245, 35, 105, 175, 245, 35, 105];
+        var yPosition = [35, 35, 35, 35, 105, 105, 105, 105, 175, 175];
         var max;
         var margin = {
-                top: 30,
+                top: 100,
                 right: 20,
                 bottom: 40,
                 left: 60
@@ -69,7 +73,7 @@
 
             listCountries = Object.keys(chart1Data);
 
-            for(var merp in years){
+            for (var merp in years) {
                 var graphData = {};
                 for (var tempKey in listCountries) {
                     graphData[tempKey] = chart1Data[listCountries[tempKey]][strYears[merp]];
@@ -81,28 +85,118 @@
                 return d;
             });
 
+            for (var tempIterate in ALLTHEDATA) {
+                // console.log(tempIterate)
+                var tempLeft = margin.left + (tempIterate % 3) * width / 3;
+                var tempTop = margin.top + (tempIterate % 3) * height / 3;
+                var tempYear = 2005 + tempIterate;
+                var color = d3.scale.category20();
 
-            var svg = d3.select('#chart2005').append("svg")
-                .attr("width", width/3)
-                .attr("height", height/3);
-
-            // console.log("TEST")
-            svg.selectAll(".dot")
-                .data(ALLTHEDATA[0])
-                .enter()
-                .append("circle")
-                .attr("class", "dot")
-                .attr("r", function(d){return d;})
-                .attr("transform", function(d) {
-                    return "translate(" + d*10 + "," + d*10 + ")";
+                var tip = d3.tip().attr('class', 'd3-tip').html(function(d, i) {
+                    return listCountries[i] + ": " + d;
                 })
 
+                /* Invoke the tip in the context of your visualization */
+
+
+                // console.log(typeof(divNames[tempIterate]))
+                var svg = d3.select(divNames[tempIterate]).append("svg")
+                    .attr("width", width / 3)
+                    .attr("height", height / 3)
+                    .attr("transform", function(d) {
+                        return "translate(" + tempLeft + "," + tempTop + ")";
+                    });
+
+                svg.call(tip)
+
+                var dataList = d3.values(ALLTHEDATA[tempIterate])
+                var circles = svg.selectAll("circle")
+                    .data(dataList)
+                    .enter()
+                    .append("circle")
+
+                var circleAttributes = circles
+                    .attr("r", function(d) {
+                        return Math.log(d);
+                    })
+                    .style("fill", function(d, i) {
+                        return color(i);
+                    })
+                    .attr("transform", function(d, i) {
+                        return "translate(" + xPosition[i] + "," + yPosition[i] + ")";
+                    }).on('mouseover', tip.show)
+                    .on('mouseout', tip.hide)
+
+                svg.append("rect")
+                    .attr("x", 5)
+                    .attr("y", 5)
+                    .attr("width", 300)
+                    .attr("height", 181)
+                    .attr("style", "outline: thin solid black;")
+                    .style("fill", "none")
+
+                svg.append("text")
+                    .text(function(d, i) {
+                        // console.log(i);
+                        return strYears[tempIterate]
+                    })
+                    .attr("transform", "translate(200,160)")
+                    .attr("font-size", "40px")
+
+            }
+
+            var svg = d3.select('#chart2008')
+                .append("svg")
+                .attr("width", 1000)
+                .attr("height", 100)
+                .append("svg:text")
+                .text("CHANGE OVER TIME")
+                .attr("x", 150)
+                .attr("y", 70)
+                .style("font-size", "400%")
+
+            var derp = d3.select('#chart2009')
+                .append("svg")
+                .attr("width", 1000)
+                .attr("height", 400)
+
+            var circles = derp.selectAll("circle")
+                .data(listCountries)
+                .enter()
+                .append("circle")
+
+            var circleAttributes = circles
+                .attr("r", 10)
+                .style("fill", function(d, i) {
+                    return color(i);
+                })
+                .attr("transform", function(d, i) {
+                    return "translate(" + 10 + "," + (i * 30 + 10) + ")";
+                })
+                // derp.append("svg:text")
+                //     .text(function(d,i){return listCountries[i]})
+                //     .attr("transform", function(d, i) {
+                //         return "translate(" + 20 + "," + (i*30+15) + ")";
+                //     })
+
+            var text = derp.selectAll("text")
+                .data(listCountries)
+                .enter()
+                .append("text");
+
+            var textLabels = text
+                .attr("x", 30)
+                .attr("y", function(d, i) {
+                    return (i * 30 + 17);
+                })
+                .text(function(d) {
+                    return d;
+                })
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "20px")
+                // .attr("fill", "red");
 
         });
-
-
-
-
     </script>
 </body>
 
