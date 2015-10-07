@@ -208,6 +208,7 @@
             var tempHeight = height + 10;
             var tempLeft = margin.left + 50;
             var tempTop = margin.top + 10;
+            chart2Data = {};
             dataset.forEach(function(d) {
                 var tempValue = +(d['Refugees (incl. refugee-like situations)']);
                 if (typeof(tempValue) === 'number' && tempValue != NaN && +d['Year'] == currYear) {
@@ -294,8 +295,7 @@
 
 
             // Draw labels
-            var tempListCountries = listCountries;
-            tempListCountries[7] = "Serbia and Kosovo";
+
             bar.append("text")
                 .attr("class", "label")
                 .attr("x", function(d) {
@@ -305,7 +305,7 @@
                 .attr("dy", ".35em")
                 .text(function(d, i) {
                     if (+i % list5Countries.length === 0)
-                        return tempListCountries[Math.floor(i / list5Countries.length)];
+                        return listCountries[Math.floor(i / list5Countries.length)];
                     else
                         return ""
                 })
