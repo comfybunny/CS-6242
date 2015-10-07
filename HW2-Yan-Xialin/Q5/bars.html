@@ -34,6 +34,7 @@
         var chart1Data = {};
         var chart2Data = {};
         var listCountries;
+        var list5Countries = ["France", "Germany", "Sweden", "Netherlands", "United Kingdom"];
         var barGraphData = {};
 
 
@@ -58,7 +59,7 @@
             json.forEach(function(d) {
                 var tempValue = +(d['Refugees (incl. refugee-like situations)']);
 
-                if (typeof(tempValue) === 'number' && tempValue != "") {
+                if (typeof(tempValue) === 'number' && tempValue != NaN) {
                     if (chart1Data[d['Origin']] == undefined) {
                         var tempDict = {};
                         tempDict[d['Year']] = tempValue;
@@ -93,7 +94,7 @@
         function yearchange() {
             d3.selectAll("svg").remove();
             loadChart1(+document.getElementById("year").value);
-            // createMultiBarChart(document.getElementById("year").value);
+            loadChart2(document.getElementById("year").value);
         }
 
         function filterChart1(obj) {
@@ -203,10 +204,171 @@
                 .style("font-size", "200%")
         }
 
-        function loadChart2(currYear){
-            dataset.forEach(function(d){
-                // console.log(d);
+        function loadChart2(currYear) {
+            var tempHeight = height + 10;
+            var tempLeft = margin.left + 50;
+            var tempTop = margin.top + 10;
+            dataset.forEach(function(d) {
+                var tempValue = +(d['Refugees (incl. refugee-like situations)']);
+                if (typeof(tempValue) === 'number' && tempValue != NaN && +d['Year'] == currYear) {
+                    if (chart2Data[d['Country / territory of asylum/residence']] == undefined) {
+                        var tempDict = {};
+                        tempDict[d['Origin']] = tempValue;
+                        chart2Data[d['Country / territory of asylum/residence']] = tempDict
+                    } else { // country is there now we need to check origin
+                        if (chart2Data[d['Country / territory of asylum/residence']][d['Origin']] == undefined) {
+                            chart2Data[d['Country / territory of asylum/residence']][d['Origin']] = tempValue;
+                            // console.log(+(d['Refugees (incl. refugee-like situations)']));
+                        } else {
+                            chart2Data[d['Country / territory of asylum/residence']][d['Origin']] = chart2Data[d['Country / territory of asylum/residence']][d['Origin']] + tempValue;
+                        }
+                    }
+
+                }
             });
+
+            var chartWidth = width,
+                barHeight = 20,
+                groupHeight = barHeight * list5Countries.length,
+                gapBetweenGroups = 10,
+                spaceForLabels = 150,
+                spaceForLegend = 150;
+
+            // Zip the series data together (first values, second values, etc.)
+            var zippedData = [];
+            for (var i = 0; i < listCountries.length; i++) {
+                for (var j = 0; j < list5Countries.length; j++) {
+                    zippedData.push(chart2Data[list5Countries[j]][listCountries[i]]);
+                }
+            }
+            // console.log(zippedData)
+
+            // Color scale
+            var color = d3.scale.category20();
+            var chartHeight = barHeight * zippedData.length + gapBetweenGroups * listCountries.length;
+
+            var x = d3.scale.linear()
+                .domain([0, d3.max(zippedData)])
+                .range([0, chartWidth]);
+
+            var y = d3.scale.linear()
+                .range([chartHeight + gapBetweenGroups, 0]);
+
+
+            // Specify the chart area and dimensions
+            var chart = d3.select("#chart2")
+                .append("svg")
+                .attr("width", spaceForLabels + chartWidth + spaceForLegend)
+                .attr("height", chartHeight+50);
+
+            // Create bars
+            var bar = chart.selectAll("g")
+                .data(zippedData)
+                .enter().append("g")
+                .attr("transform", function(d, i) {
+                    return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i / list5Countries.length))) + ")";
+                });
+
+            // Create rectangles of the correct width
+            bar.append("rect")
+                .attr("fill", function(d, i) {
+                    return color(+i % list5Countries.length);
+                })
+                .attr("class", "bar")
+                .attr("width", x)
+                .attr("height", barHeight - 1);
+
+            // Add text label in bar
+            bar.append("text")
+                .attr("x", function(d) {
+                    return x(+d);
+                })
+                .attr("y", barHeight / 2)
+                .attr("fill", "red")
+                .attr("dy", ".35em")
+                .text(function(d) {
+                    return +d;
+                });
+
+
+
+
+            // Draw labels
+            var tempListCountries = listCountries;
+            tempListCountries[7] = "Serbia and Kosovo";
+            bar.append("text")
+                .attr("class", "label")
+                .attr("x", function(d) {
+                    return -150;
+                })
+                .attr("y", groupHeight / 2)
+                .attr("dy", ".35em")
+                .text(function(d, i) {
+                    if (+i % list5Countries.length === 0)
+                        return tempListCountries[Math.floor(i / list5Countries.length)];
+                    else
+                        return ""
+                })
+                ;
+
+
+
+            // Draw legend
+            var legendRectSize = 18,
+                legendSpacing = 4;
+
+            var legend = chart.selectAll('.legend')
+                .data(list5Countries)
+                .enter()
+                .append('g')
+                .attr('transform', function(d, i) {
+                    var height = legendRectSize + legendSpacing;
+                    var offset = -gapBetweenGroups / 2;
+                    var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
+                    var vert = +i * height - offset;
+                    return 'translate(' + horz + ',' + vert + ')';
+                });
+
+            legend.append('rect')
+                .attr('width', legendRectSize)
+                .attr('height', legendRectSize)
+                .style('fill', function(d, i) {
+                    return color(i);
+                })
+                .style('stroke', function(d, i) {
+                    return color(i);
+                });
+
+            legend.append('text')
+                .attr('class', 'legend')
+                .attr('x', legendRectSize + legendSpacing)
+                .attr('y', legendRectSize - legendSpacing)
+                .text(function(d) {
+                    return d;
+                });
+
+
+chart.append("svg:text")
+                .text("refugee count per residence country")
+                .attr("x", 550)
+                .attr("y", 25)
+                .style("font-size", "200%")
+
+    var x = d3.scale.linear()
+        .domain([0, d3.max(zippedData)+10000])
+        .range([0, 900]);
+
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+                chart.append("g")
+        .attr("class", "xaxis")
+        .attr('id','xaxis')
+        .attr("transform", "translate(" + 150 + ", " + 1100+ ")")
+        .call(xAxis);
+
         };
     </script>
 </body>
