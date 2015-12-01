@@ -69,6 +69,9 @@
                             chart1Data[d['Origin']][d['Year']] = tempValue;
                             // console.log(+(d['Refugees (incl. refugee-like situations)']));
                         } else {
+                            if (!tempValue) {
+                                tempValue = 0;
+                            }
                             chart1Data[d['Origin']][d['Year']] = chart1Data[d['Origin']][d['Year']] + tempValue;
                         }
                         // chart1Data[d['Origin']] = chart1Data[d['Origin']] + tempValue;
@@ -115,7 +118,6 @@
                 graphData[tempKey] = chart1Data[listCountries[tempKey]][currYear];
                 graphAxis[tempKey] = listCountries[tempKey];
             }
-            // console.log(graphData)
 
             var max = d3.max(graphData, function(d) {
                 return d;
@@ -162,6 +164,7 @@
                     }
                 })
                 .attr('width', function(d) {
+                    
                     return xscale(+d);
                 });
 
