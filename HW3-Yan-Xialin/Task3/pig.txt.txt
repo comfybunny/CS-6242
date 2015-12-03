@@ -1,0 +1,6 @@
+bigrams = LOAD 's3://ngrams-english-mega/*' AS (bigram:chararray, year:int, count:int, books:int);
+tempor = GROUP bigrams by bigram;
+outputTemp = FOREACH tempor GENERATE group as bigram, (float)SUM(bigrams.count)/SUM(bigrams.books) as avg;
+a = order outputTemp by avg desc, bigram asc;
+aa = limit a 10;
+STORE aa into 's3://cse6242-xyan37/output-fat-top-10/' USING PigStorage('\t');

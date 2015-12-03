@@ -1,0 +1,1 @@
+I had to write a class that extends Mapper and a class that extends Reducer. In the Mapper class, the map function was the one that did the map part. This just output the node and the weight. The Ruduce class had a reduce function that then combined these.

@@ -1,0 +1,1 @@
+Spark/Scala can give the same results as Hadoop/Java implementation. It is much faster and more concise (could have been chained into 1 line). For Hadoop, we needed to write a Mapper and Reducer class whereas in Spark we just filled the function to be applied on each element.
