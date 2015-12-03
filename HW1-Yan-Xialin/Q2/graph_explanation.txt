@@ -1,1 +1,0 @@
-This graph uses the Fruchterman Reingold layout. The color of the nodes range from red for nodes with a degree of 1 to blue for nodes with a degree of 16. This will make movies without similar titles to appear gray. The IDs are shown for movies with many similarities.

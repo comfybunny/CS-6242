@@ -1,8 +1,0 @@
-Xialin Yan
-Open Refine
-
-i. In the "Event" and "Venue" columns, there are lots of noisy and dirty data. Because of the different ways one thing can be written which differ based on the text alone, they are different things. Clustering will group these variations of same entity into one based on some heuristics. Google refine with the click of a button to merge will find and merge all of these different inputs into one specified.
-
-iii. The occasion column contains nominal data. The status column contains ordinal data.
-
-v. Setting dish count to a numeric facet gives a graph of the data showing that our data is heavily skewed with a large range. Using the expression language, we can change the scale of this data to be more meaningful and record the error to highlight problems.

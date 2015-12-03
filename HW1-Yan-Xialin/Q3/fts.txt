@@ -1,1 +1,0 @@
-FTS performance in comparison with a SQL 'like' query will run a few magnitude times faster. FTS table will take more memory on disk than SQL. FTS would be better suited if your keyword is a discrete token that you want to find rather than things that contain the token.

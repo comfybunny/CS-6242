@@ -2,6 +2,7 @@
 # Please use this outline to implement your decision tree. You can add any code around this.
 
 import csv
+import math
 
 # Enter You Name Here
 myname = "Yan-Xialin" # or "Doe-Jane-"
@@ -16,10 +17,10 @@ def isANumber(inputString):
 # This function is given the set of data returns index of attribute with 
 def informationGain(dataArray):
     entropyList = [None] * (len(dataArray[0])-1)
-    dataLabels = []
+    # dataLabels = []
     labelIndex = len(entropyList)
-    for x in range(len(dataArray)):
-        dataLabels.append(float(dataArray[x][labelIndex]))
+    # for x in range(len(dataArray)):
+    #     dataLabels.append(float(dataArray[x][labelIndex]))
 
     for attribute in range(len(entropyList)):
         currAttribute = []
@@ -34,20 +35,38 @@ def informationGain(dataArray):
         countAttribute0Class1 = 0
         countAttribute1Class0 = 0
         countAttribute1Class1 = 0
+        # print(len(dataArray))
+
+        print(splitValue)
 
         for z in range(len(currAttribute)):
             # attribute 0
-            if(currAttribute[z]<splitValue):
-                if(dataLabels[x] == 0):
-                    countAttribute0Class0++
+            # print(dataArray[z][attribute]==currAttribute[z])
+            if(dataArray[z][attribute]<splitValue):
+                # print("BOOP")
+                if(dataArray[z][labelIndex] == 0):
+                    countAttribute0Class0+=1
                 else:
-                    countAttribute0Class1++
+                    countAttribute0Class1+=1
             else:
-                if(dataLabels[x] == 0):
-                    countAttribute1Class0++
-                else:
-                    countAttribute1Class1++
 
+                if(dataArray[z][labelIndex] == 0):
+                    countAttribute1Class0+=1
+                else:
+                    countAttribute1Class1+=1
+
+        att0 = countAttribute0Class1+countAttribute0Class0
+        att1 = countAttribute1Class1+countAttribute1Class0
+        child0entropy = 0
+        child1entropy = 0
+        try:
+            child0entropy = -1*float(countAttribute0Class1)/att0*math.log(float(countAttribute0Class1)/att0) - float(countAttribute0Class0)/att0*math.log(float(countAttribute0Class0)/att0)
+            child1entropy = -1*float(countAttribute1Class1)/att1*math.log(float(countAttribute1Class1)/att1) - float(countAttribute1Class0)/att1*math.log(float(countAttribute1Class0)/att1)
+        except ValueError:
+            print("countAttribute0Class0 " + str(countAttribute0Class0) + "\t countAttribute0Class1" + str(countAttribute0Class1) + "\t countAttribute1Class0" + str(countAttribute1Class0) + "\t countAttribute1Class1" + str(countAttribute1Class1))
+        weightedChildrenEntropy = float(att0)/(att0+att1)*child0entropy + float(att1)/(att0+att1)*child1entropy
+
+        print("attribute: " + str(attribute) + "\t" + str(weightedChildrenEntropy))
 # Implement your decision tree below
 class DecisionTree():
     tree = {}
@@ -62,8 +81,10 @@ class DecisionTree():
         test = []
         # for x in range(len(training_set)):
         #     test.append(float(training_set[x][11]))
-        for attribute in range(len(entropyList)):
-            print(attribute)
+        # for attribute in range(len(entropyList)):
+        #     print(attribute)
+
+        informationGain(training_set)
         
         self.tree = {}
 
